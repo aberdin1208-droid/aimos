@@ -1,30 +1,28 @@
-import os, threading, logging
-from flask import Flask
+import os
+import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
+# log pra você ver no Render
 logging.basicConfig(level=logging.INFO)
-TOKEN = os.getenv("BOT_TOKEN")
-print(f"TOKEN encontrado: {bool(TOKEN)}")
 
-web = Flask(__name__)
-@web.route("/")
-def home():
-    return "AIMOS online!", 200
-
-def run_web():
-    web.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
+TOKEN = os.getenv("TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("AIMOS online! ✅")
+    await update.message.reply_text("Bot online! Aberdin aqui.")
 
-def run_bot():
+def main():
     if not TOKEN:
-        print("ERRO: BOT_TOKEN nao configurado!")
+        print("ERRO: Variável TOKEN não encontrada no Render")
         return
-    print("Iniciando bot AIMOS...")
-    ApplicationBuilder().token(TOKEN).build().add_handler(CommandHandler("start", start)).run_polling()
+
+    app = ApplicationBuilder().token(TOKEN).build()
+    
+    # CORREÇÃO DO SEU ERRO: não pode encadear tudo
+    app.add_handler(CommandHandler("start", start))
+    
+    print("Bot iniciando...")
+    app.run_polling()
 
 if __name__ == "__main__":
-    threading.Thread(target=run_web, daemon=True).start()
-    run_bot()
+    main()
