@@ -19,12 +19,12 @@ async def responde(update, context):
     try:
         client = Groq(api_key=GROQ_KEY)
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": update.message.text}]
         )
         await update.message.reply_text(completion.choices[0].message.content)
     except Exception as e:
-        await update.message.reply_text(f"Erro Groq: {e}")
+        await update.message.reply_text(f"Erro: {e}")
 
 def main():
     app = Application.builder().token(TOKEN).build()
