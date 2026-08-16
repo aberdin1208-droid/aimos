@@ -1,30 +1,21 @@
 import os
+import logging
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from groq import Groq
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=GROQ_API_KEY)
+# pega o token que você vai colocar no Render
+TOKEN = os.getenv("BOT_TOKEN")
+
+logging.basicConfig(level=logging.INFO)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("AIMOS online 😈 manda a pergunta")
+    await update.message.reply_text("AIMOS online! ✅")
 
-async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    pergunta = update.message.text
-    try:
-        resp = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": "Você é o AIMOS, sarcástico, inteligente e debochado. Responda curto."},
-                {"role": "user", "content": pergunta}
-            ]
-        )
-        await update.message.reply_text(resp.choices[0].message.content)
-    except Exception as e:
-        await update.message.reply_text(f"Deu erro: {e}")
+if not TOKEN:
+    raise ValueError("Falta a variável BOT_TOKEN no Render!")
 
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, responder))
+
+print("Bot iniciando com a versão nova...")
 app.run_polling()
