@@ -25,10 +25,10 @@ def limitar(texto, max_l=4):
 
 def get_botoes():
     keyboard = [
-        [InlineKeyboardButton("🚀 O que é?", callback_data="oquee")],
-        [InlineKeyboardButton("💰 Preços", callback_data="planos")],
-        [InlineKeyboardButton("🎓 Afiliados", callback_data="afiliados")],
-        [InlineKeyboardButton("👉 Começar GRÁTIS", url=LINK)]
+        [InlineKeyboardButton("💎 Systeme.io - O que é?", callback_data="oquee")],
+        [InlineKeyboardButton("💰 Planos e Preços", callback_data="planos")],
+        [InlineKeyboardButton("🎓 Afiliados 60% Vitalício", callback_data="afiliados")],
+        [InlineKeyboardButton("🚀 Começar GRÁTIS Agora", url=LINK)]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -54,7 +54,6 @@ async def botoes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat_id
 
     if query.data == "oquee":
-        # SÓ ESSE FICA LONGO EXPLICATIVO
         texto = (
             f"🤖 Systeme.io é tudo-em-um pra vender online\n\n"
             f"🚀 O que faz: Funil + Email ILIMITADO (2k grátis) + Curso + Afiliados + Blog\n"
@@ -62,3 +61,35 @@ async def botoes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🎓 500 mil empreendedores já usam\n\n"
             f"👇 Cria sua conta grátis:\n{LINK}"
         )
+    elif query.data == "planos":
+        texto = f"💰 Grátis: 2000 contatos\n🚀 Pago desde $27/mês\n👇 {LINK}"
+    else:
+        texto = f"🎓 Afiliado 60% vitalício\n🚀 Vende tudo junto\n👇 {LINK}"
+
+    await context.bot.send_message(chat_id=chat_id, text=texto, reply_markup=get_botoes(), disable_web_page_preview=True)
+
+async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    txt = update.message.text
+    if not txt: return
+    sistema = f"Voce e Aberdin IA, vendedora Systeme.io. SEJA CURTA: max 3 linhas, PT-BR, emoji, sempre CTA + LINK {LINK}. Fale que e IA."
+    try:
+        resp = await get_groq(sistema, txt)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=limitar(resp), reply_markup=get_botoes(), disable_web_page_preview=True)
+    except Exception as e:
+        logging.error(f"Erro Groq: {e}")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"🤖 Systeme.io tudo em 1\n📧 2k grátis\n👇 {LINK}", reply_markup=get_botoes(), disable_web_page_preview=True)
+
+def main():
+    if not BOT_TOKEN or not GROQ_API_KEY:
+        logging.error("Falta BOT_TOKEN ou GROQ_API_KEY")
+        return
+    threading.Thread(target=run_flask, daemon=True).start()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(botoes_callback))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, boas_vindas))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, responder))
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
