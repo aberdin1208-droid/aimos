@@ -54,12 +54,15 @@ async def botoes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat_id
 
     if query.data == "oquee":
+        # AGORA COM A EXPLICAÇÃO COMPLETA QUE VOCÊ PEDIU
         texto = (
-            f"🤖 Systeme.io é tudo-em-um pra vender online\n\n"
-            f"🚀 O que faz: Funil + Email ILIMITADO (2k grátis) + Curso + Afiliados + Blog\n"
-            f"💰 Substitui ClickFunnels + Mailchimp + Hotmart por $27/mês\n"
-            f"🎓 500 mil empreendedores já usam\n\n"
-            f"👇 Cria sua conta grátis:\n{LINK}"
+            f"💎 O que é a Systeme.io? É tudo-em-um de verdade:\n\n"
+            f"🚀 1. FUNIL: Cria página de captura, vendas e checkout igual ClickFunnels\n"
+            f"📧 2. EMAIL ILIMITADO: 2.000 contatos grátis e envios ilimitados\n"
+            f"🎓 3. CURSOS: Hospeda seu curso sem pagar 10% por venda igual Hotmart\n"
+            f"🤝 4. AFILIADOS: Cria seu programa e paga 60% no automático\n"
+            f"💰 Substitui 4 ferramentas caras por $27/mês. 500 mil já usam.\n\n"
+            f"👇 Cria sua conta grátis aqui:\n{LINK}"
         )
     elif query.data == "planos":
         texto = f"💰 Grátis: 2000 contatos\n🚀 Pago desde $27/mês\n👇 {LINK}"
