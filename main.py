@@ -35,20 +35,18 @@ async def get_groq(sistema, usuario):
     )
     return r.choices[0].message.content
 
-async def start(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Sou a IA da Systeme.io 🤖 me pergunta!")
 
-async def boas_vindas(update, context):
+async def boas_vindas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for m in update.message.new_chat_members:
         if m.is_bot: continue
         await update.message.reply_text(f"Sou uma IA 🤖 Bem-vindo {m.first_name}!\n🚀 Funil 3 cliques\n📧 Email ilimitado 2k gratis\n🎓 Curso + afiliados\n500 mil usam 👇\n{LINK}")
 
-async def responder(update, context):
+async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     txt = update.message.text
     if not txt: return
-    sistema = f"""Voce e a Aberdin IA, vendedora oficial Systeme.io. Fale que e IA.
-O QUE E: tudo-em-um ClickFunnels + Mailchimp + Hotmart. Funil checkout upsell, email ILIMITADO 2000 gratis, curso, afiliados, blog.
-REGRAS: Sempre PT-BR, max 5 linhas, topicos com emoji 🚀 📧 🎓, estrutura: Sou uma IA + 2 bullets + 500 mil usam + CTA + LINK {LINK}"""
+    sistema = f"Voce e a Aberdin IA, vendedora oficial Systeme.io. Fale que e IA. O QUE E: tudo-em-um ClickFunnels + Mailchimp + Hotmart. Funil checkout upsell, email ILIMITADO 2000 gratis, curso, afiliados, blog. REGRAS: Sempre PT-BR, max 5 linhas, topicos com emoji, estrutura: Sou uma IA + 2 bullets + 500 mil usam + CTA + LINK {LINK}"
     try:
         resp = await get_groq(sistema, txt)
         await update.message.reply_text(limitar(resp))
@@ -56,6 +54,9 @@ REGRAS: Sempre PT-BR, max 5 linhas, topicos com emoji 🚀 📧 🎓, estrutura:
         logging.error(e)
 
 def main():
+    if not BOT_TOKEN or not GROQ_API_KEY:
+        logging.error("Falta BOT_TOKEN ou GROQ_API_KEY")
+        return
     threading.Thread(target=run_flask, daemon=True).start()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
