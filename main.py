@@ -2,8 +2,8 @@ import os
 import logging
 import threading
 from flask import Flask
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from groq import Groq
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -23,9 +23,19 @@ def limitar(texto, max_l=5):
     linhas = [l for l in texto.split('\n') if l.strip()!='']
     return '\n'.join(linhas[:max_l])
 
+def get_botoes():
+    keyboard = [
+        [InlineKeyboardButton("🚀 O que é Systeme.io?", callback_data="oquee")],
+        [InlineKeyboardButton("💰 Planos e Preços", callback_data="planos")],
+        [InlineKeyboardButton("🎓 Afiliados e Cursos", callback_data="afiliados")],
+        [InlineKeyboardButton("👉 Começar GRÁTIS", url=LINK)]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 async def get_groq(sistema, usuario):
+    # MODELO NOVO ATUALIZADO
     r = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         messages=[
             {"role":"system","content":sistema},
             {"role":"user","content":usuario}
@@ -36,22 +46,33 @@ async def get_groq(sistema, usuario):
     return r.choices[0].message.content
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Sou a IA da Systeme.io 🤖 me pergunta!")
+    await update.message.reply_text("Sou a IA da Systeme.io 🤖 me pergunta!", reply_markup=get_botoes())
 
 async def boas_vindas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for m in update.message.new_chat_members:
         if m.is_bot: continue
-        await update.message.reply_text(f"Sou uma IA 🤖 Bem-vindo {m.first_name}!\n🚀 Funil 3 cliques\n📧 Email ilimitado 2k gratis\n🎓 Curso + afiliados\n500 mil usam 👇\n{LINK}")
+        await update.message.reply_text(f"Sou uma IA 🤖 Bem-vindo {m.first_name}!\n🚀 Funil 3 cliques\n📧 Email ilimitado 2k gratis\n🎓 Curso + afiliados\n500 mil usam 👇\n{LINK}", reply_markup=get_botoes())
+
+async def botoes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if query.data == "oquee":
+        await query.message.reply_text(f"Sou uma IA 🤖\n🚀 Systeme.io é tudo-em-um: funil + email + curso + afiliados\n📧 Envia email ILIMITADO pra 2000 contatos de graça\n🎓 500 mil usam 👇\n{LINK}", reply_markup=get_botoes())
+    elif query.data == "planos":
+        await query.message.reply_text(f"📧 Plano GRÁTIS: 2000 contatos, funil ilimitado, email ilimitado\n🚀 Plano pago a partir de $27/mês\n500 mil usam 👇\n{LINK}", reply_markup=get_botoes())
+    elif query.data == "afiliados":
+        await query.message.reply_text(f"🎓 Programa de afiliados 60% recorrente\n📧 Vende curso, funil, email tudo junto\n500 mil usam 👇\n{LINK}", reply_markup=get_botoes())
 
 async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     txt = update.message.text
     if not txt: return
-    sistema = f"Voce e a Aberdin IA, vendedora oficial Systeme.io. Fale que e IA. O QUE E: tudo-em-um ClickFunnels + Mailchimp + Hotmart. Funil checkout upsell, email ILIMITADO 2000 gratis, curso, afiliados, blog. REGRAS: Sempre PT-BR, max 5 linhas, topicos com emoji, estrutura: Sou uma IA + 2 bullets + 500 mil usam + CTA + LINK {LINK}"
+    sistema = f"Voce e a Aberdin IA, vendedora oficial Systeme.io. Fale que e IA. O QUE E: tudo-em-um ClickFunnels + Mailchimp + Hotmart. REGRAS: PT-BR, max 5 linhas, emoji, CTA + LINK {LINK}"
     try:
         resp = await get_groq(sistema, txt)
-        await update.message.reply_text(limitar(resp))
+        await update.message.reply_text(limitar(resp), reply_markup=get_botoes())
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Erro Groq: {e}")
+        await update.message.reply_text(f"Tive um erro na IA, mas já te explico:\n🚀 Funil 3 cliques\n📧 Email ilimitado 2k gratis\n{LINK}", reply_markup=get_botoes())
 
 def main():
     if not BOT_TOKEN or not GROQ_API_KEY:
@@ -60,6 +81,7 @@ def main():
     threading.Thread(target=run_flask, daemon=True).start()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(botoes_callback))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, boas_vindas))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, responder))
     app.run_polling()
