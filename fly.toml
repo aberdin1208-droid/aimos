@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for aimos on 2026-08-19T22:45:56Z
+# fly.toml app configuration file generated for aimos-ggzetw on 2026-08-19T22:56:45Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'aimos'
+app = 'aimos-ggzetw'
 primary_region = 'ams'
 
 [build]
