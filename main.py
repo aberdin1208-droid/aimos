@@ -9,7 +9,7 @@ from groq import Groq
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-PORT = int(os.getenv("PORT", 10000))
+PORT = int(os.getenv("PORT", 8080))
 LINK = "https://systeme.io/pt?sa=sa0279228743abe942e022d749c9984a272aad2f09"
 
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +37,6 @@ def get_botoes():
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# CORRIGIDO: Agora não trava o bot
 async def get_groq(sistema, usuario):
     def _call():
         return client.chat.completions.create(
@@ -122,8 +121,6 @@ def main():
     app.add_handler(CallbackQueryHandler(botoes_callback))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, boas_vindas))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, responder))
-
-    # CORRIGIDO: Não acumula mensagem e fica 24h sem travar
     app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
