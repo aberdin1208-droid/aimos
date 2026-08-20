@@ -1,3 +1,4 @@
-Flask==3.0.3
-python-telegram-bot==21.6
-groq==0.9.0
+python-telegram-bot
+flask
+groq
+python-dotenv
