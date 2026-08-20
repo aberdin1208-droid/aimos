@@ -1,14 +1,20 @@
 app = "aimos"
 primary_region = "gru"
+
 [build]
   dockerfile = "Dockerfile"
+
+[env]
+  TZ = "America/Sao_Paulo"
+
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "off"
+  auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
   processes = ["app"]
+
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
