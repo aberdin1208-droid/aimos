@@ -19,7 +19,7 @@ flask_app = Flask(__name__)
 
 @flask_app.route('/')
 def home():
-    return "aberdin_IA online"
+    return "aberdin_IA online - GRU"
 
 def run_flask():
     flask_app.run(host="0.0.0.0", port=PORT)
@@ -71,27 +71,17 @@ async def botoes_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat_id
-
     if query.data == "oquee":
-        texto = (
-            f"💎 O que é a Systeme.io? É tudo-em-um de verdade:\n\n"
-            f"🚀 1. FUNIL: Cria página de captura, vendas e checkout igual ClickFunnels\n"
-            f"📧 2. EMAIL ILIMITADO: 2.000 contatos grátis e envios ilimitados\n"
-            f"🎓 3. CURSOS: Hospeda seu curso sem pagar 10% por venda igual Hotmart\n"
-            f"🤝 4. AFILIADOS: Cria seu programa e paga 60% no automático\n"
-            f"💰 Substitui 4 ferramentas caras por $27/mês. 500 mil já usam.\n\n"
-            f"👇 Cria sua conta grátis aqui:\n{LINK}"
-        )
+        texto = f"💎 O que é a Systeme.io? É tudo-em-um de verdade:\n\n🚀 1. FUNIL: Cria página de captura, vendas e checkout igual ClickFunnels\n📧 2. EMAIL ILIMITADO: 2.000 contatos grátis e envios ilimitados\n🎓 3. CURSOS: Hospeda seu curso sem pagar 10% por venda igual Hotmart\n🤝 4. AFILIADOS: Cria seu programa e paga 60% no automático\n💰 Substitui 4 ferramentas caras por $27/mês. 500 mil já usam.\n\n👇 Cria sua conta grátis aqui:\n{LINK}"
     elif query.data == "planos":
         texto = f"💰 Grátis: 2000 contatos\n🚀 Pago desde $27/mês\n👇 {LINK}"
     else:
         texto = f"🎓 Afiliado 60% vitalício\n🚀 Vende tudo junto\n👇 {LINK}"
-
     await context.bot.send_message(chat_id=chat_id, text=texto, reply_markup=get_botoes(), disable_web_page_preview=True)
 
 async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     txt = update.message.text
-    if not txt:
+    if not txt or len(txt) > 500:
         return
     sistema = f"Voce e Aberdin IA, vendedora Systeme.io. SEJA CURTA: max 3 linhas, PT-BR, emoji, sempre CTA + LINK {LINK}. Fale que e IA."
     try:
@@ -104,12 +94,6 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except Exception as e:
         logging.error(f"Erro Groq: {e}")
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=f"🤖 Systeme.io tudo em 1\n📧 2k grátis\n👇 {LINK}",
-            reply_markup=get_botoes(),
-            disable_web_page_preview=True
-        )
 
 def main():
     if not BOT_TOKEN or not GROQ_API_KEY:
